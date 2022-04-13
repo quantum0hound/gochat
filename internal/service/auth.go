@@ -23,20 +23,24 @@ type tokenClaims struct {
 }
 
 type AuthService struct {
-	repo repository.Auth
+	userProvider repository.UserProvider
 }
 
-func NewAuthService(repo repository.Auth) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthService(userProvider repository.UserProvider) *AuthService {
+	return &AuthService{userProvider: userProvider}
 }
 
-func (s *AuthService) CreateUser(user models.User) (int, error) {
+func (s *AuthService) CreateUser(user *models.User) (int, error) {
+	exists := s.userProvider.Exists(user.Username)
+	if exists {
+		return 0, errors.New("user already exists")
+	}
 	user.Password = s.generatePasswordHash(user.Password)
-	return s.repo.CreateUser(user)
+	return s.userProvider.Create(user)
 }
 
 func (s *AuthService) GenerateAccessToken(username, password string) (string, error) {
-	user, err := s.repo.GetUser(username, s.generatePasswordHash(password))
+	user, err := s.userProvider.Get(username, s.generatePasswordHash(password))
 	if err != nil {
 		return "", err
 	}

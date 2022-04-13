@@ -6,16 +6,17 @@ import (
 )
 
 type Repository struct {
-	Auth
+	UserProvider
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		Auth: NewAuthPostgres(db),
+		UserProvider: NewUserPostgres(db),
 	}
 }
 
-type Auth interface {
-	CreateUser(user models.User) (int, error)
-	GetUser(username, passwordHash string) (models.User, error)
+type UserProvider interface {
+	Create(user *models.User) (int, error)
+	Get(username, passwordHash string) (models.User, error)
+	Exists(username string) bool
 }

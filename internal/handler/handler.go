@@ -21,7 +21,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"*"}
 
-	//router.Use(cors.New(config))
+	router.Use(cors.New(config))
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK,

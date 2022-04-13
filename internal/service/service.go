@@ -6,14 +6,15 @@ import (
 )
 
 type Service struct {
-	repo *repository.Repository
 	Auth
 }
 
 type Auth interface {
-	CreateUser(user models.User) (int, error)
+	CreateUser(user *models.User) (int, error)
 }
 
 func NewService(repo *repository.Repository) *Service {
-	return &Service{repo: repo}
+	return &Service{
+		Auth: NewAuthService(repo),
+	}
 }

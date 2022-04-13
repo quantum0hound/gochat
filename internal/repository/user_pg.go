@@ -6,15 +6,15 @@ import (
 	"github.com/quantum0hound/gochat/internal/models"
 )
 
-type AuthPostgres struct {
+type UserPostgres struct {
 	db *sqlx.DB
 }
 
-func NewAuthPostgres(db *sqlx.DB) *AuthPostgres {
+func NewUserPostgres(db *sqlx.DB) *AuthPostgres {
 	return &AuthPostgres{db: db}
 }
 
-func (r *AuthPostgres) CreateUser(user *models.User) (int, error) {
+func (r *AuthPostgres) Create(user *models.User) (int, error) {
 	query := fmt.Sprintf(
 		"INSERT INTO %s (username,password_hash) values ($1, $2) RETURNING id",
 		usersTable,
@@ -31,9 +31,19 @@ func (r *AuthPostgres) CreateUser(user *models.User) (int, error) {
 	return id, nil
 }
 
-func (r *AuthPostgres) GetUser(username, passwordHash string) (models.User, error) {
+func (r *AuthPostgres) Get(username, passwordHash string) (models.User, error) {
 	var user models.User
 	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
 	err := r.db.Get(&user, query, username, passwordHash)
 	return user, err
+}
+
+func (r *AuthPostgres) Exists(username string) bool {
+	var user models.User
+	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1)", usersTable)
+	err := r.db.Get(&user, query, username)
+	if err != nil {
+		return false
+	}
+	return true
 }
