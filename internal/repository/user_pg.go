@@ -1,20 +1,25 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/quantum0hound/gochat/internal/models"
 )
 
-type UserPostgres struct {
+type UserProviderPostgres struct {
 	db *sqlx.DB
 }
 
-func NewUserPostgres(db *sqlx.DB) *AuthPostgres {
-	return &AuthPostgres{db: db}
+func NewUserProviderPostgres(db *sqlx.DB) *UserProviderPostgres {
+	return &UserProviderPostgres{db: db}
 }
 
-func (r *AuthPostgres) Create(user *models.User) (int, error) {
+func (r *UserProviderPostgres) Create(user *models.User) (int, error) {
+	if user == nil {
+		return 0, errors.New("incorrect args")
+	}
 	query := fmt.Sprintf(
 		"INSERT INTO %s (username,password_hash) values ($1, $2) RETURNING id",
 		usersTable,
@@ -31,14 +36,23 @@ func (r *AuthPostgres) Create(user *models.User) (int, error) {
 	return id, nil
 }
 
-func (r *AuthPostgres) Get(username, passwordHash string) (models.User, error) {
+func (r *UserProviderPostgres) Get(username, passwordHash string) (*models.User, error) {
+	if len(username) == 0 || len(passwordHash) == 0 {
+		return nil, errors.New("incorrect args")
+	}
 	var user models.User
 	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
-	err := r.db.Get(&user, query, username, passwordHash)
-	return user, err
+	row := r.db.QueryRow(query, username, passwordHash)
+	if err := row.Scan(&user); err == sql.ErrNoRows {
+		return nil, errors.New("incorrect username or password")
+	}
+	return &user, nil
 }
 
-func (r *AuthPostgres) Exists(username string) bool {
+func (r *UserProviderPostgres) Exists(username string) bool {
+	if len(username) == 0 {
+		return false
+	}
 	var user models.User
 	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1)", usersTable)
 	err := r.db.Get(&user, query, username)

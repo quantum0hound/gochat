@@ -9,7 +9,7 @@ CREATE TABLE users
 CREATE TABLE channels
 (
     id          serial       not null unique,
-    name        varchar(255) not null,
+    name        varchar(255) not null unique,
     creator     int references users (id) not null,
     description varchar(255) not null
 );

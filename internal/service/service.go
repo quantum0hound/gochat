@@ -11,6 +11,9 @@ type Service struct {
 
 type Auth interface {
 	CreateUser(user *models.User) (int, error)
+	GenerateAccessToken(username, password string) (string, error)
+	ParseAccessToken(accessToken string) (int, error)
+	GenerateRefreshToken() string
 }
 
 func NewService(repo *repository.Repository) *Service {

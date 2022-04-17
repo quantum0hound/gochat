@@ -19,7 +19,8 @@ const (
 
 type tokenClaims struct {
 	jwt.StandardClaims
-	UserId int `json:"user_id"`
+	UserId   int    `json:"user_id"`
+	Username string `json:"username"`
 }
 
 type AuthService struct {
@@ -52,6 +53,7 @@ func (s *AuthService) GenerateAccessToken(username, password string) (string, er
 				IssuedAt:  time.Now().Unix(),
 			},
 			user.Id,
+			username,
 		},
 	)
 	return token.SignedString([]byte(os.Getenv("SIGNING_KEY")))
@@ -61,7 +63,7 @@ func (s *AuthService) GenerateRefreshToken() string {
 	return utils.RandomString(refreshTokenLength)
 }
 
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
+func (s *AuthService) ParseAccessToken(accessToken string) (int, error) {
 	token, err := jwt.ParseWithClaims(
 		accessToken,
 		&tokenClaims{},
