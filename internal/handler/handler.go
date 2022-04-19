@@ -37,9 +37,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			channels.GET("", h.getAllChannels)
 			channels.POST("", h.createChannel)
+			channels.DELETE("/:id", h.deleteChannel)
 			channels.GET("/:id/join", h.joinChannel)
 			channels.GET("/:id/leave", h.leaveChannel)
-			channels.DELETE("/:id", h.deleteChannel)
 		}
 	}
 

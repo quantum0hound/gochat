@@ -49,13 +49,9 @@ func (r *ChannelProviderPostgres) Create(channel *models.Channel) (int, error) {
 	return channel.Id, tx.Commit()
 }
 
-func (r *ChannelProviderPostgres) Delete(channelName string) error {
-	if len(channelName) == 0 {
-		return errors.New("unable to delete channel : incorrect args")
-	}
-	query := fmt.Sprintf(`DELETE FROM %s WHERE name = $1`, channelsTable)
-
-	_, err := r.db.Exec(query, channelName)
+func (r *ChannelProviderPostgres) Delete(channelId, userId int) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = $1 AND creator = $2`, channelsTable)
+	_, err := r.db.Exec(query, channelId, userId)
 	return err
 
 }
@@ -68,8 +64,17 @@ func (r *ChannelProviderPostgres) GetById(channelId int) (*models.Channel, error
 	}
 	return &channel, nil
 }
-func (r *ChannelProviderPostgres) GetAll() ([]models.Channel, error) {
-	return nil, errors.New("")
+
+func (r *ChannelProviderPostgres) GetAll(userId int) ([]models.Channel, error) {
+	var channels []models.Channel
+	query := fmt.Sprintf(
+		`SELECT ct.id, ct.name, ct.creator, ct.description FROM %s AS ct 
+				INNER JOIN %s AS uc on ct.id = uc.channel_id WHERE uc.user_id = $1`,
+		channelsTable,
+		usersChannelsTable,
+	)
+	err := r.db.Select(&channels, query, userId)
+	return channels, err
 }
 
 func (r *ChannelProviderPostgres) GetByName(name string) (*models.Channel, error) {

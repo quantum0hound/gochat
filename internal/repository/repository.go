@@ -25,8 +25,8 @@ type UserProvider interface {
 
 type ChannelProvider interface {
 	Create(channel *models.Channel) (int, error)
-	Delete(name string) error
-	GetAll() ([]models.Channel, error)
+	Delete(channelId, userId int) error
+	GetAll(userId int) ([]models.Channel, error)
 	GetById(channelId int) (*models.Channel, error)
 	GetByName(name string) (*models.Channel, error)
 	Exists(name string) bool

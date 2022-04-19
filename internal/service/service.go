@@ -19,6 +19,8 @@ type Auth interface {
 
 type Channel interface {
 	Create(user *models.Channel) (int, error)
+	GetAll(userId int) ([]models.Channel, error)
+	Delete(channelId, userId int) error
 }
 
 func NewService(repo *repository.Repository) *Service {

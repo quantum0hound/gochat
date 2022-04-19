@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	tokenTTL           = 12 * time.Hour
+	tokenTTL           = 1000 * time.Hour
 	refreshTokenLength = 32
 )
 

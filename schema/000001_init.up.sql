@@ -17,8 +17,8 @@ CREATE TABLE channels
 CREATE TABLE users_channels
 (
     id          bigserial       not null unique,
-    user_id     int references users (id) not null,
-    channel_id  int references channels (id) not null
+    user_id     int references users (id) on delete cascade not null,
+    channel_id  int references channels (id) on delete cascade not null
 );
 
 CREATE TABLE messages

@@ -17,3 +17,11 @@ func NewChannelService(channelProvider repository.ChannelProvider) *ChannelServi
 func (c *ChannelService) Create(channel *models.Channel) (int, error) {
 	return c.channelProvider.Create(channel)
 }
+
+func (c *ChannelService) Delete(channelId, userId int) error {
+	return c.channelProvider.Delete(channelId, userId)
+}
+
+func (c *ChannelService) GetAll(userId int) ([]models.Channel, error) {
+	return c.channelProvider.GetAll(userId)
+}
