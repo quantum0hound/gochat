@@ -7,6 +7,7 @@ import (
 
 type Service struct {
 	Auth
+	Channel
 }
 
 type Auth interface {
@@ -16,8 +17,13 @@ type Auth interface {
 	GenerateRefreshToken() string
 }
 
+type Channel interface {
+	Create(user *models.Channel) (int, error)
+}
+
 func NewService(repo *repository.Repository) *Service {
 	return &Service{
-		Auth: NewAuthService(repo),
+		Auth:    NewAuthService(repo.UserProvider),
+		Channel: NewChannelService(repo.ChannelProvider),
 	}
 }

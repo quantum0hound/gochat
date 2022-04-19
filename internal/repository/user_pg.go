@@ -31,6 +31,9 @@ func (r *UserProviderPostgres) Create(user *models.User) (int, error) {
 	)
 	var id int
 	if err := row.Scan(&id); err != nil {
+		if pgErrorAlreadyExists == getErrorCode(err) {
+			err = errors.New("user already exists")
+		}
 		return 0, err
 	}
 	return id, nil
@@ -41,11 +44,15 @@ func (r *UserProviderPostgres) Get(username, passwordHash string) (*models.User,
 		return nil, errors.New("incorrect args")
 	}
 	var user models.User
-	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
+	query := fmt.Sprintf("SELECT id,username,password_hash FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
 	row := r.db.QueryRow(query, username, passwordHash)
-	if err := row.Scan(&user); err == sql.ErrNoRows {
+	if err := row.Scan(&user.Id, &user.Username, &user.Password); err == sql.ErrNoRows {
 		return nil, errors.New("incorrect username or password")
+	} else if err != nil {
+
+		return nil, err
 	}
+
 	return &user, nil
 }
 
@@ -53,9 +60,9 @@ func (r *UserProviderPostgres) Exists(username string) bool {
 	if len(username) == 0 {
 		return false
 	}
-	var user models.User
+	var id int
 	query := fmt.Sprintf("SELECT id FROM %s WHERE (username=$1)", usersTable)
-	err := r.db.Get(&user, query, username)
+	err := r.db.Get(&id, query, username)
 	if err != nil {
 		return false
 	}

@@ -32,10 +32,6 @@ func NewAuthService(userProvider repository.UserProvider) *AuthService {
 }
 
 func (s *AuthService) CreateUser(user *models.User) (int, error) {
-	exists := s.userProvider.Exists(user.Username)
-	if exists {
-		return 0, errors.New("user already exists")
-	}
 	user.Password = s.generatePasswordHash(user.Password)
 	return s.userProvider.Create(user)
 }

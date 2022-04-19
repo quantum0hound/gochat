@@ -25,11 +25,15 @@ func (r *ChannelProviderPostgres) Create(channel *models.Channel) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	var id int
+
 	createChannelQuery := fmt.Sprintf("INSERT INTO %s (name,description,creator) VALUES ($1, $2, $3) RETURNING id",
 		channelsTable)
 	row := tx.QueryRow(createChannelQuery, channel.Name, channel.Description, channel.Creator)
-	if err := row.Scan(&id); err != nil {
+
+	if err := row.Scan(&channel.Id); err != nil {
+		if pgErrorAlreadyExists == getErrorCode(err) {
+			err = errors.New("channel with specified name already exists")
+		}
 		_ = tx.Rollback()
 		return 0, err
 	}
@@ -42,7 +46,7 @@ func (r *ChannelProviderPostgres) Create(channel *models.Channel) (int, error) {
 		return 0, err
 	}
 
-	return id, tx.Commit()
+	return channel.Id, tx.Commit()
 }
 
 func (r *ChannelProviderPostgres) Delete(channelName string) error {
@@ -64,6 +68,10 @@ func (r *ChannelProviderPostgres) GetById(channelId int) (*models.Channel, error
 	}
 	return &channel, nil
 }
+func (r *ChannelProviderPostgres) GetAll() ([]models.Channel, error) {
+	return nil, errors.New("")
+}
+
 func (r *ChannelProviderPostgres) GetByName(name string) (*models.Channel, error) {
 	if len(name) == 0 {
 		return nil, errors.New("unable to get channel by name : incorrect args")

@@ -3,14 +3,20 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
+	"strconv"
 )
 
 const (
 	usersTable         = "users"
 	channelsTable      = "channels"
 	usersChannelsTable = "users_channels"
-	messagesTable      = "todo_items"
+	messagesTable      = "messages"
+)
+
+const (
+	pgErrorAlreadyExists = 23505
 )
 
 type Config struct {
@@ -42,4 +48,17 @@ func NewPostgresDb(cfg Config) (*sqlx.DB, error) {
 	}
 
 	return db, nil
+}
+
+func getErrorCode(err error) int {
+	pqErr, ok := err.(*pq.Error)
+	if !ok {
+		return 0
+	}
+	code, err := strconv.Atoi(string(pqErr.Code))
+	if err != nil {
+		return 0
+	}
+	return code
+
 }

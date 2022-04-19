@@ -16,12 +16,8 @@ func NewHandler(srv *service.Service) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-	router := gin.New()
-
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"*"}
-
-	router.Use(cors.New(config))
+	router := gin.Default()
+	router.Use(cors.Default())
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK,
@@ -35,13 +31,16 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.POST("/signup", h.signUp)
 		auth.POST("/signin", h.signIn)
 	}
-	channels := router.Group("/channel")
+	api := router.Group("/api")
 	{
-		channels.GET("", h.getAllChannels)
-		channels.POST("", h.createChannel)
-		channels.GET("/:id/join", h.joinChannel)
-		channels.GET("/:id/leave", h.leaveChannel)
-		channels.DELETE("/:id", h.deleteChannel)
+		channels := api.Group("/channel", h.userIdentity)
+		{
+			channels.GET("", h.getAllChannels)
+			channels.POST("", h.createChannel)
+			channels.GET("/:id/join", h.joinChannel)
+			channels.GET("/:id/leave", h.leaveChannel)
+			channels.DELETE("/:id", h.deleteChannel)
+		}
 	}
 
 	return router
