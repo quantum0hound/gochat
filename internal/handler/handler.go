@@ -3,21 +3,26 @@ package handler
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/quantum0hound/gochat/internal/handler/server/ws"
 	"github.com/quantum0hound/gochat/internal/service"
 	"net/http"
 )
 
 type Handler struct {
-	srv *service.Service
+	srv      *service.Service
+	wsServer *ws.WebSocketServer
 }
 
-func NewHandler(srv *service.Service) *Handler {
-	return &Handler{srv: srv}
+func NewHandler(srv *service.Service, wsServer *ws.WebSocketServer) *Handler {
+	return &Handler{srv: srv, wsServer: wsServer}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.Default()
-	router.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowHeaders = append(corsConfig.AllowHeaders, "Authorization")
+	corsConfig.AllowAllOrigins = true
+	router.Use(cors.New(corsConfig))
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK,

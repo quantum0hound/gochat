@@ -3,8 +3,9 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"github.com/quantum0hound/gochat/configs"
-	"github.com/quantum0hound/gochat/internal"
 	"github.com/quantum0hound/gochat/internal/handler"
+	"github.com/quantum0hound/gochat/internal/handler/server/http"
+	"github.com/quantum0hound/gochat/internal/handler/server/ws"
 	"github.com/quantum0hound/gochat/internal/repository"
 	"github.com/quantum0hound/gochat/internal/service"
 	"github.com/sirupsen/logrus"
@@ -35,11 +36,13 @@ func main() {
 		logrus.Fatalf("Error occured during connection to DB :%s", err.Error())
 	}
 
+	wsServer := ws.NewWebSocketServer()
 	repo := repository.NewRepository(db)
 	srv := service.NewService(repo)
-	hnd := handler.NewHandler(srv)
+	hnd := handler.NewHandler(srv, wsServer)
 
-	server := new(internal.Server)
+	go wsServer.Run()
+	server := new(http.Server)
 	if err := server.Run(viper.GetUint("port"), hnd.InitRoutes()); err != nil {
 		logrus.Fatalf("Error occured during HTTP server execution :%s", err.Error())
 	}

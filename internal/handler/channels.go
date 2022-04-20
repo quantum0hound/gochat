@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/quantum0hound/gochat/internal/handler/server/ws"
 	"github.com/quantum0hound/gochat/internal/models"
 	"net/http"
 	"strconv"
@@ -47,6 +48,13 @@ func (h *Handler) createChannel(c *gin.Context) {
 }
 
 func (h *Handler) joinChannel(c *gin.Context) {
+
+	channelId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	h.wsServer.ServePeer(c.Writer, c.Request, ws.ChannelId(channelId))
 
 }
 
