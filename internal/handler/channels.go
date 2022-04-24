@@ -2,7 +2,6 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/quantum0hound/gochat/internal/handler/server/ws"
 	"github.com/quantum0hound/gochat/internal/models"
 	"net/http"
 	"strconv"
@@ -17,6 +16,9 @@ func (h *Handler) getAllChannels(c *gin.Context) {
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
+	}
+	if channels == nil {
+		channels = make([]models.Channel, 0)
 	}
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"channels": channels,
@@ -47,15 +49,50 @@ func (h *Handler) createChannel(c *gin.Context) {
 	})
 }
 
+type searchInput struct {
+	Pattern string `json:"pattern"`
+}
+
+func (h *Handler) searchForChannels(c *gin.Context) {
+
+	var input searchInput
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	channels, err := h.srv.SearchForChannels(input.Pattern)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if channels == nil {
+		channels = make([]models.Channel, 0)
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"channels": channels,
+	})
+}
+
 func (h *Handler) joinChannel(c *gin.Context) {
+	userId, err := getUserId(c)
+	if err != nil {
+		return
+	}
 
 	channelId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	h.wsServer.ServePeer(c.Writer, c.Request, ws.ChannelId(channelId))
-
+	channel, err := h.srv.Channel.Join(channelId, userId)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"channel": channel,
+	})
 }
 
 func (h *Handler) leaveChannel(c *gin.Context) {

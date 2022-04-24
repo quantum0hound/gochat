@@ -14,8 +14,9 @@ import (
 )
 
 func main() {
-	logrus.SetReportCaller(true)
-	logrus.SetFormatter(new(logrus.JSONFormatter))
+	//logrus.SetReportCaller(true)
+	//logrus.SetFormatter(new(logrus.JSONFormatter))
+	logrus.SetLevel(logrus.DebugLevel)
 	if err := configs.InitConfig(); err != nil {
 		logrus.Fatalf("Error occured, during reading the config file: %s", err.Error())
 	}

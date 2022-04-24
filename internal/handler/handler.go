@@ -42,10 +42,15 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			channels.GET("", h.getAllChannels)
 			channels.POST("", h.createChannel)
-			channels.DELETE("/:id", h.deleteChannel)
 			channels.GET("/:id/join", h.joinChannel)
+			channels.POST("search", h.searchForChannels)
+			channels.DELETE("/:id", h.deleteChannel)
 			channels.GET("/:id/leave", h.leaveChannel)
 		}
+		//pubChannels := api.Group("/channel")
+		//{
+		//	pubChannels.GET("/:id/join", h.joinChannel)
+		//}
 	}
 
 	return router

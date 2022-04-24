@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/quantum0hound/gochat/internal/models"
+	"strings"
 )
 
 type ChannelProviderPostgres struct {
@@ -75,6 +76,33 @@ func (r *ChannelProviderPostgres) GetAll(userId int) ([]models.Channel, error) {
 	)
 	err := r.db.Select(&channels, query, userId)
 	return channels, err
+}
+
+func (r *ChannelProviderPostgres) SearchForChannels(pattern string) ([]models.Channel, error) {
+	var channels []models.Channel
+	query := fmt.Sprintf(
+		`SELECT id, name, creator, description FROM %s 
+				WHERE (lower(name) LIKE '%s%%')`,
+		channelsTable, strings.ToLower(pattern),
+	)
+	err := r.db.Select(&channels, query)
+	return channels, err
+}
+
+func (r *ChannelProviderPostgres) Join(channelId, userId int) (*models.Channel, error) {
+	channel, err := r.GetById(channelId)
+	if err != nil {
+		return nil, errors.New("user not exists")
+	}
+	query := fmt.Sprintf("INSERT INTO %s (user_id,channel_id) VALUES ($1, $2) IF user_id",
+		usersChannelsTable)
+	_, err = r.db.Exec(query, userId, channelId)
+
+	if err != nil {
+		return nil, err
+	}
+	return channel, nil
+
 }
 
 func (r *ChannelProviderPostgres) GetByName(name string) (*models.Channel, error) {

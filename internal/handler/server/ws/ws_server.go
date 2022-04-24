@@ -38,6 +38,9 @@ func NewWebSocketServer() *WebSocketServer {
 		protocolUpgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
 		},
 	}
 }
@@ -51,6 +54,7 @@ func (ws *WebSocketServer) Run() {
 				connections = make(map[*connection]bool)
 				ws.channels[subscr.channelId] = connections
 			}
+			logrus.Debugf("%s connected to channel%d", subscr.conn.wsConn.RemoteAddr().String(), subscr.channelId)
 			ws.channels[subscr.channelId][subscr.conn] = true
 		case subscr := <-ws.unregister:
 			connections := ws.channels[subscr.channelId]
@@ -66,6 +70,8 @@ func (ws *WebSocketServer) Run() {
 		case m := <-ws.broadcast:
 			connections := ws.channels[m.channelId]
 			for c := range connections {
+				logrus.Debugf("Broadcasting to %s", c.wsConn.RemoteAddr().String())
+
 				select {
 				case c.send <- m.data:
 				default:

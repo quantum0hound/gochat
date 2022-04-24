@@ -21,6 +21,8 @@ type Channel interface {
 	Create(user *models.Channel) (int, error)
 	GetAll(userId int) ([]models.Channel, error)
 	Delete(channelId, userId int) error
+	Join(channelId, userId int) (*models.Channel, error)
+	SearchForChannels(pattern string) ([]models.Channel, error)
 }
 
 func NewService(repo *repository.Repository) *Service {

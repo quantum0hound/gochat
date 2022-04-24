@@ -25,3 +25,11 @@ func (c *ChannelService) Delete(channelId, userId int) error {
 func (c *ChannelService) GetAll(userId int) ([]models.Channel, error) {
 	return c.channelProvider.GetAll(userId)
 }
+
+func (c *ChannelService) SearchForChannels(pattern string) ([]models.Channel, error) {
+	return c.channelProvider.SearchForChannels(pattern)
+}
+
+func (c *ChannelService) Join(channelId, userId int) (*models.Channel, error) {
+	return c.channelProvider.Join(channelId, userId)
+}

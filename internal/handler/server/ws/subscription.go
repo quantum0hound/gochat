@@ -51,6 +51,8 @@ func (s *subscription) handleRead(unregister chan subscription, broadcast chan m
 			break
 		}
 		m := message{msg, s.channelId}
+
+		logrus.Debugf("%s", msg)
 		broadcast <- m
 	}
 }
