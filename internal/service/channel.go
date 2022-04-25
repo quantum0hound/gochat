@@ -33,3 +33,7 @@ func (c *ChannelService) SearchForChannels(pattern string) ([]models.Channel, er
 func (c *ChannelService) Join(channelId, userId int) (*models.Channel, error) {
 	return c.channelProvider.Join(channelId, userId)
 }
+
+func (c *ChannelService) Leave(channelId, userId int) error {
+	return c.channelProvider.Leave(channelId, userId)
+}

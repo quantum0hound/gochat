@@ -22,6 +22,7 @@ type Channel interface {
 	GetAll(userId int) ([]models.Channel, error)
 	Delete(channelId, userId int) error
 	Join(channelId, userId int) (*models.Channel, error)
+	Leave(channelId, userId int) error
 	SearchForChannels(pattern string) ([]models.Channel, error)
 }
 

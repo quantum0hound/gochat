@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
@@ -59,9 +58,23 @@ func (r *ChannelProviderPostgres) Delete(channelId, userId int) error {
 func (r *ChannelProviderPostgres) GetById(channelId int) (*models.Channel, error) {
 	var channel models.Channel
 	query := fmt.Sprintf("SELECT * FROM %s WHERE (id=$1)", channelsTable)
-	row := r.db.QueryRow(query, channelId)
-	if err := row.Scan(&channel); err == sql.ErrNoRows {
-		return nil, errors.New("channel is not found")
+	err := r.db.Get(&channel, query, channelId)
+	if err != nil {
+		return nil, err
+	}
+	return &channel, nil
+}
+
+func (r *ChannelProviderPostgres) GetByName(name string) (*models.Channel, error) {
+	if len(name) == 0 {
+		return nil, errors.New("unable to get channel by name : incorrect args")
+	}
+
+	var channel models.Channel
+	query := fmt.Sprintf("SELECT * FROM %s WHERE (name=$1)", channelsTable)
+	err := r.db.Get(&channel, query, name)
+	if err != nil {
+		return nil, err
 	}
 	return &channel, nil
 }
@@ -92,9 +105,9 @@ func (r *ChannelProviderPostgres) SearchForChannels(pattern string) ([]models.Ch
 func (r *ChannelProviderPostgres) Join(channelId, userId int) (*models.Channel, error) {
 	channel, err := r.GetById(channelId)
 	if err != nil {
-		return nil, errors.New("user not exists")
+		return nil, errors.New("channel not exists")
 	}
-	query := fmt.Sprintf("INSERT INTO %s (user_id,channel_id) VALUES ($1, $2) IF user_id",
+	query := fmt.Sprintf("INSERT INTO %s (user_id,channel_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
 		usersChannelsTable)
 	_, err = r.db.Exec(query, userId, channelId)
 
@@ -105,28 +118,12 @@ func (r *ChannelProviderPostgres) Join(channelId, userId int) (*models.Channel, 
 
 }
 
-func (r *ChannelProviderPostgres) GetByName(name string) (*models.Channel, error) {
-	if len(name) == 0 {
-		return nil, errors.New("unable to get channel by name : incorrect args")
-	}
+func (r *ChannelProviderPostgres) Leave(channelId, userId int) error {
 
-	var channel models.Channel
-	query := fmt.Sprintf("SELECT * FROM %s WHERE (name=$1)", channelsTable)
-	row := r.db.QueryRow(query, name)
-	if err := row.Scan(&channel); err == sql.ErrNoRows {
-		return nil, errors.New("channel is not found")
-	}
-	return &channel, nil
-}
-func (r *ChannelProviderPostgres) Exists(name string) bool {
-	if len(name) == 0 {
-		return false
-	}
-	var id int
-	query := fmt.Sprintf("SELECT id FROM %s WHERE (name=$1)", channelsTable)
-	err := r.db.Get(&id, query, name)
-	if err != nil {
-		return false
-	}
-	return true
+	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=$1 AND channel_id=$2",
+		usersChannelsTable)
+	_, err := r.db.Exec(query, userId, channelId)
+
+	return err
+
 }

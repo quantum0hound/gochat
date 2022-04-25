@@ -44,7 +44,8 @@ func (r *UserProviderPostgres) Get(username, passwordHash string) (*models.User,
 		return nil, errors.New("incorrect args")
 	}
 	var user models.User
-	query := fmt.Sprintf("SELECT id,username,password_hash FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE (username=$1 AND password_hash=$2)", usersTable)
+
 	row := r.db.QueryRow(query, username, passwordHash)
 	if err := row.Scan(&user.Id, &user.Username, &user.Password); err == sql.ErrNoRows {
 		return nil, errors.New("incorrect username or password")
