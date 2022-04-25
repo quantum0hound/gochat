@@ -33,4 +33,13 @@ CREATE TABLE messages
 );
 
 
+CREATE TABLE sessions
+(
+    id              serial    not null unique,
+    user_id         int references users (id) on delete cascade not null,
+    refresh_token   varchar(36) not null unique,
+    expires_in      timestamp not null,
+    fingerprint     varchar(64) not null
+)
+
 

@@ -45,7 +45,7 @@ func (h *Handler) signIn(c *gin.Context) {
 	}
 	refreshToken := h.srv.Auth.GenerateRefreshToken()
 
-	c.SetCookie("RefreshToken", refreshToken, 60*60*24, "", "", false, true)
+	c.SetCookie("RefreshToken", refreshToken, 60*60*24, "/auth", "", false, true)
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"accessToken":  accessToken,

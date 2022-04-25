@@ -5,16 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"github.com/quantum0hound/gochat/internal/models"
 	"github.com/quantum0hound/gochat/internal/repository"
-	"github.com/quantum0hound/gochat/pkg/utils"
 	"os"
 	"time"
 )
 
 const (
-	tokenTTL           = 1000 * time.Hour
-	refreshTokenLength = 32
+	tokenTTL = 1000 * time.Hour
 )
 
 type tokenClaims struct {
@@ -56,7 +55,7 @@ func (s *AuthService) GenerateAccessToken(username, password string) (string, er
 }
 
 func (s *AuthService) GenerateRefreshToken() string {
-	return utils.RandomString(refreshTokenLength)
+	return uuid.New().String()
 }
 
 func (s *AuthService) ParseAccessToken(accessToken string) (int, error) {
