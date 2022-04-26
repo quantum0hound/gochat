@@ -13,6 +13,7 @@ const (
 	channelsTable      = "channels"
 	usersChannelsTable = "users_channels"
 	messagesTable      = "messages"
+	sessionsTable      = "sessions"
 )
 
 const (

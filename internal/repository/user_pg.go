@@ -57,6 +57,16 @@ func (r *UserProviderPostgres) Get(username, passwordHash string) (*models.User,
 	return &user, nil
 }
 
+func (r *UserProviderPostgres) GetById(id int) (*models.User, error) {
+	var user models.User
+	query := fmt.Sprintf("SELECT * FROM %s WHERE id=$1", usersTable)
+	err := r.db.Get(&user, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *UserProviderPostgres) Exists(username string) bool {
 	if len(username) == 0 {
 		return false

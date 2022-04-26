@@ -11,10 +11,13 @@ type Service struct {
 }
 
 type Auth interface {
+	GetUser(username, password string) (*models.User, error)
 	CreateUser(user *models.User) (int, error)
-	GenerateAccessToken(username, password string) (string, error)
+	GenerateAccessToken(user *models.User) (string, error)
+	GenerateAccessTokenId(id int) (string, error)
 	ParseAccessToken(accessToken string) (int, error)
-	GenerateRefreshToken() string
+	CreateSession(userId int, fingerprint string) (*models.Session, error)
+	RefreshSession(refreshToken, fingerprint string) (*models.Session, error)
 }
 
 type Channel interface {
@@ -28,7 +31,7 @@ type Channel interface {
 
 func NewService(repo *repository.Repository) *Service {
 	return &Service{
-		Auth:    NewAuthService(repo.UserProvider),
+		Auth:    NewAuthService(repo.UserProvider, repo.SessionProvider),
 		Channel: NewChannelService(repo.ChannelProvider),
 	}
 }

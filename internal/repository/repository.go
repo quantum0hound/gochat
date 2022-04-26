@@ -8,19 +8,28 @@ import (
 type Repository struct {
 	UserProvider
 	ChannelProvider
+	SessionProvider
 }
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		UserProvider:    NewUserProviderPostgres(db),
 		ChannelProvider: NewChannelProviderPostgres(db),
+		SessionProvider: NewSessionProviderPostgres(db),
 	}
 }
 
 type UserProvider interface {
 	Create(user *models.User) (int, error)
 	Get(username, passwordHash string) (*models.User, error)
+	GetById(id int) (*models.User, error)
 	Exists(username string) bool
+}
+
+type SessionProvider interface {
+	Create(session *models.Session) error
+	Delete(id string) error
+	Get(id string) (*models.Session, error)
 }
 
 type ChannelProvider interface {
