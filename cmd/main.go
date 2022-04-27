@@ -37,12 +37,12 @@ func main() {
 		logrus.Fatalf("Error occured during connection to DB :%s", err.Error())
 	}
 
-	wsServer := ws.NewWebSocketServer()
 	repo := repository.NewRepository(db)
 	srv := service.NewService(repo)
+	wsServer := ws.NewWebSocketServer(srv)
 	hnd := handler.NewHandler(srv, wsServer)
 
-	go wsServer.Run()
+	//go wsServer.Run()
 	server := new(http.Server)
 	if err := server.Run(viper.GetUint("port"), hnd.InitRoutes()); err != nil {
 		logrus.Fatalf("Error occured during HTTP server execution :%s", err.Error())

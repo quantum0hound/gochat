@@ -14,7 +14,10 @@ type Handler struct {
 }
 
 func NewHandler(srv *service.Service, wsServer *ws.WebSocketServer) *Handler {
-	return &Handler{srv: srv, wsServer: wsServer}
+	return &Handler{
+		srv:      srv,
+		wsServer: wsServer,
+	}
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
@@ -39,6 +42,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	}
 	api := router.Group("/api")
 	{
+		api.GET("connect", h.connectWebSocket)
 		channels := api.Group("/channel", h.userIdentity)
 		{
 			channels.GET("", h.getAllChannels)
